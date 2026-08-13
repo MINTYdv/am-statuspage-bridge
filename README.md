@@ -84,7 +84,7 @@ Statuspage (to create, update, and resolve incidents).
 ## Installation
 
 ```bash
-git clone https://github.com/<your-org>/am-statuspage-bridge.git
+git clone https://github.com/MINTYdv/am-statuspage-bridge.git
 cd am-statuspage-bridge
 cp .env.example .env
 # edit .env with your Statuspage credentials and a webhook secret
@@ -377,7 +377,7 @@ See [Troubleshooting](#troubleshooting).
 ## Development
 
 ```bash
-git clone https://github.com/<your-org>/am-statuspage-bridge.git
+git clone https://github.com/MINTYdv/am-statuspage-bridge.git
 cd am-statuspage-bridge
 python3 -m venv .venv
 source .venv/bin/activate

@@ -4,22 +4,26 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
-### Added
-- Test suite covering incident creation, stacking/escalation, resolution, grouping, reconciliation, and persistence.
-- GitHub Actions CI (lint, format check, tests, dependency audit, Docker build).
-- `docker-compose.yml` with a persistent named volume for the incidents store.
-- `.env.example`, `SECURITY.md`, `CONTRIBUTING.md`, issue/PR templates.
-- Support for the webhook token via `Authorization: Bearer <token>` header, in addition to the `?token=` query parameter.
-- Real `/health` readiness check reflecting whether the bridge finished startup.
+Nothing yet.
 
-### Changed
-- Statuspage incident `impact_override` is now derived from the alert's component status (minor/major/critical) instead of always being `"critical"`.
-- The bridge now fails fast at startup (instead of starting in a broken state) when required configuration is missing or the Statuspage API is unreachable.
-- Docker image now runs as a non-root user and uses exec-form `CMD` for proper signal handling on `docker stop`.
-- Dependencies are now pinned.
+## [1.0.0] - 2026-08-13
 
-### Removed
-- The insecure default value for `SECRET_WEBHOOK` (`SuperSecureSecret`). The variable is now required.
+First public release.
 
-### Security
-- Webhook token comparison now uses a constant-time comparison (`hmac.compare_digest`).
+### Features
+- Receives AlertManager webhook notifications (`firing` and `resolved`) on `POST /webhook`.
+- Creates a Statuspage incident automatically when an alert fires, resolved to a component by name (including `Group/Component` syntax).
+- Groups concurrent alerts on the same component into a single incident, escalating severity when a second independent alert stacks onto an already-open one.
+- Resolves incidents automatically once all their alerts have cleared, whether partially (one alert among several) or fully (the last one).
+- Derives the Statuspage incident impact (minor/major/critical) from the alert's component status instead of a fixed value.
+- Persists running incidents to a local JSON file (atomic write) so state survives a bridge restart.
+- Periodically reconciles running incidents against AlertManager's active alerts, so an incident doesn't stay open forever if a `resolved` webhook is lost.
+- Fails fast at startup on missing configuration or an unreachable Statuspage API, instead of serving traffic in a broken state.
+- `GET /health` reflects real startup readiness; `POST /webhook` accepts the shared secret via `?token=` or `Authorization: Bearer`, compared with `hmac.compare_digest`.
+- Docker image runs as a non-root user, with a `HEALTHCHECK` and exec-form `CMD` for proper signal handling on `docker stop`.
+- Test suite (pytest) and CI (lint, format check, tests, dependency audit, Docker build) via GitHub Actions.
+
+### Known limitations
+- Single-instance only: incident state lives in process memory and a local file. Running more than one replica/worker against the same `INCIDENTS_STORE_PATH` is not supported and can create duplicate incidents.
+- No internal retry/backoff for outbound Statuspage API calls; the bridge relies on AlertManager's own webhook redelivery on failure.
+- The bridge only manages incidents it created itself; it cannot detect or take over an incident created manually on Statuspage for the same component.
