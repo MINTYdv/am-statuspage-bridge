@@ -26,5 +26,6 @@ data/
 .idea/
 .DS_Store
 
-# Local Claude Code session settings
+# Local AI assistant / IDE session settings
 .claude/
+.cursor/
